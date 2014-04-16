@@ -37,6 +37,7 @@ import json
 import hashlib
 import pymongo
 import datetime
+import os
 
 debug = 5
 
@@ -102,7 +103,7 @@ def get_file_hash_size(file_name):
 def create_stone(file_name):
     hashsum , size = get_file_hash_size(file_name)
     stone = {
-        'name' : file_name ,
+        'name' : os.path.basename(file_name) ,
         'hash' : hashsum,
         'size' : size,
         # TODO: location,
@@ -119,8 +120,20 @@ def insert_in_db(mongodb, stone):
     else:
         return insertion_id
 
-def scan_directory(path):
-    pass
+def scan_directory(mongodb,path):
+    found = []
+    for dirpath, dirs, files in os.walk(path):
+        for file_name in files:
+            print("Scanning "+file_name)
+            try:
+                stone = create_stone(os.path.join(dirpath,file_name))
+            except:
+                print ("Unable to process "+ os.path.join(dirpath,file_name))
+            else:
+                found.append(insert_in_db(mongodb,stone))
+    return found
+    
+
 
 
 def initialize_db(url):
