@@ -34,6 +34,7 @@ This program will:
 
 import subprocess
 import json
+import hashlib
 
 debug = 5
 
@@ -77,7 +78,24 @@ def get_music_tag(file_name):
                     output[outname] = data['format']['tags'][inname]
         return output
 
-                   
+def get_file_hash(file_name):
+    file_hash = hashlib.sha512()
+    chunk_size = 1024*1024  # 1MiB
+    try:
+        with open(file_name, 'rb') as f:
+            byte = f.read(chunk_size)
+            previous_byte = byte
+            byte_size = len(byte)
+            while byte:
+                file_hash.update(byte)
+                previous_byte = byte
+                byte = f.read(chunk_size)
+                byte_size += len(byte)
+    except IOError:
+        raise ("Unable to read "+file_name)
+    except:
+        raise ("Error while hashing "+file_name)
+    return file_hash.hexdigest() , byte_size
 
 def scan_directory(path):
     pass
