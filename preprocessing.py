@@ -35,6 +35,8 @@ This program will:
 import subprocess
 import json
 import hashlib
+import pymongo
+import datetime
 
 debug = 5
 
@@ -78,7 +80,7 @@ def get_music_tag(file_name):
                     output[outname] = data['format']['tags'][inname]
         return output
 
-def get_file_hash(file_name):
+def get_file_hash_size(file_name):
     file_hash = hashlib.sha512()
     chunk_size = 1024*1024  # 1MiB
     try:
@@ -97,9 +99,38 @@ def get_file_hash(file_name):
         raise ("Error while hashing "+file_name)
     return file_hash.hexdigest() , byte_size
 
+def create_stone(file_name):
+    hashsum , size = get_file_hash_size(file_name)
+    stone = {
+        'name' : file_name ,
+        'hash' : hashsum,
+        'size' : size,
+        # TODO: location,
+        'insertion_date' : datetime.datetime.utcnow()
+        }
+    return stone
+
+def insert_in_db(mongodb, stone):
+    try:
+        stones = mongodb['stones']
+        insertion_id = stones.insert(stone)
+    except:
+        raise ("Error inserting in the db")
+    else:
+        return insertion_id
+
 def scan_directory(path):
     pass
 
+
+def initialize_db(url):
+    try:
+        client = pymongo.MongoClient(url)
+        database = client['limestone']
+    except:
+        raise ('Database error')
+    else:
+        return database
     
 
         
