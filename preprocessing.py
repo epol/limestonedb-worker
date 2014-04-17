@@ -83,13 +83,21 @@ def insert_in_db(mongodb, stone):
     else:
         return insertion_id
 
-def scan_directory(mongodb,path):
+def scan_directory(mongodb,path,modules = []):
     found = []
     for dirpath, dirs, files in os.walk(path):
         for file_name in files:
             print("Scanning "+file_name)
             try:
                 stone = create_stone(os.path.join(dirpath,file_name))
+                for module in modules:
+                    try:
+                        substone = get_substone(module,os.path.join(dirpath,file_name))
+                    except:
+                        pass
+                    else:
+                        if substone != {}:
+                            stone[module] = substone
             except:
                 print ("Unable to process "+ os.path.join(dirpath,file_name))
             else:
@@ -109,7 +117,7 @@ def initialize_db(url):
         return database
     
 
-def get_substone(moudule_name, file_name):
+def get_substone(module_name, file_name):
     try:
         module = importlib.import_module(module_name)
     except:
