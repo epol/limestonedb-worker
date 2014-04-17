@@ -32,54 +32,17 @@ This program will:
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import subprocess
-import json
 import hashlib
 import pymongo
 import datetime
 import os
+import importlib
 
 debug = 5
 
 def print_debug(level,msg):
     if level <= debug:
         print("[limestonedb preprocessing][debug] "+str(msg))
-
-def get_raw_media_informations(file_name):
-    try:
-        command_output = subprocess.check_output(["avprobe","-loglevel","quiet","-of","json","-show_format","-show_streams",str(file_name)])
-    except:
-        raise("Unable to parse "+str(file_name))
-
-    try:
-        data = json.loads(command_output.decode('utf8'))
-    except:
-        raise("Error parsing the json object from "+file_name)
-
-    return data
-
-def get_music_tag(file_name):
-    try:
-        data = get_raw_media_informations(file_name)
-    except:
-        return {}
-    else:
-        output = {}
-        for inname, outname in [
-                ("format_name", "format_name"), # mp3
-                ("duration","duration"),        # 176.519250
-                ]:
-            if inname in data['format']:
-                output[outname] = data['format'][inname]
-        if 'tags' in data['format']:
-            for inname, outname in [
-                    ("artist","artist"),
-                    ("title","title"),
-                    ("genre","genre"),
-                    ]:
-                if inname in data['format']['tags']:
-                    output[outname] = data['format']['tags'][inname]
-        return output
 
 def get_file_hash_size(file_name):
     file_hash = hashlib.sha512()
@@ -146,4 +109,15 @@ def initialize_db(url):
         return database
     
 
-        
+def get_substone(moudule_name, file_name):
+    try:
+        module = importlib.import_module(module_name)
+    except:
+        raise("Error importing "+module_name+" module")
+    try:
+        substone = module.get_substone(file_name)
+    except:
+        raise("Error getting the "+module_name+" substone from "+file_name)
+    else:
+        return substone
+
