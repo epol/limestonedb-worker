@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-Film module
+Video module
 
 
 """
 
-# music.py
+# video.py
 # This file is part of limestonedb
 # 
 # Copyright (C) 2014 - Enrico Polesel
